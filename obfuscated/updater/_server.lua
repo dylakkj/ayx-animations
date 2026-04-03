@@ -44,7 +44,7 @@ local function determineFolder(cb)
                     end
                     
                     if isDev then
-                        print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
+                        print("^3["..resourceName.."] Atenção: Versão de desenvolvimento.^7")
                     end
                     cb(isDev and "open/" or "obfuscated/")
                 end, "GET")

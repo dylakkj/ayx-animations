@@ -345,9 +345,9 @@ end
 CreateThread(function()
 	Wait(1000)
 	local licenseKey = GetLicenseKey()
-	if licenseKey then
+	--[[ if licenseKey then
 		LicenseLog("License Key detectada.", "info")
-	end
+	end ]]
 	CheckLicense(false)
 end)
 
