@@ -159,6 +159,14 @@ Config = {
 		["poledance"] = true,
 		["poledance2"] = true,
 		["poledance3"] = true,
+		["poledance4"] = true,
+		["poledance5"] = true,
+		["poledance6"] = true,
+		["poledance7"] = true,
+		["poledance8"] = true,
+		["poledance9"] = true,
+		["poledance10"] = true,
+		["poledance11"] = true,
 		
 	},
 

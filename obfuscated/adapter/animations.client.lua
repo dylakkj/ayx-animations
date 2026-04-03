@@ -797,10 +797,6 @@ AnimTable = {
 	["stripper"] = { category = "normal", dict = "stripper1@anim" , anim = "stripper1_clip" , andar = false , loop = true, hide = true },
 	["stripper2"] = { category = "normal", dict = "strip2@anim" , anim = "strip2_clip" , andar = false , loop = true , hide = true },
 
-	["poledance"] = { category = "normal", dict = "poledancer@anim" , anim = "poledancer_clip" , andar = false , loop = true, hide = true  },
-	["poledance2"] = { category = "normal", dict = "poledancer2@anim" , anim = "poledancer2_clip" , andar = false , loop = true, hide = true  },
-	["poledance3"] = { category = "normal", dict = "poledancer3@anim" , anim = "poledancer3_clip" , andar = false , loop = true, hide = true  },
-
 	["foot"] = { category = "normal", dict = "1foot@anim" , anim = "1foot_clip" , andar = false , loop = true, hide = true  },
 	["footwork"] = { category = "normal", dict = "custom@footwork" , anim = "footwork" , andar = false , loop = true },
 	
@@ -930,17 +926,21 @@ AnimTable = {
 	["sxfoto42"] = { category = "normal", dict = "murda@wakandaforever", anim = "wakandaforever", andar = false, loop = true, hide = true },
 	["sxfoto43"] = { category = "normal", dict = "murda@wakandaforever2", anim = "wakandaforever2", andar = false, loop = true, hide = true },
 
-	["poledance"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance1", anim = "pd_dance_01", andar = false, loop = true },
-	["poledance2"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance2", anim = "pd_dance_02", andar = false, loop = true },
-	["poledance3"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance3", anim = "pd_dance_03", andar = false, loop = true },
+	["poledance"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance1", anim = "pd_dance_01", andar = false, loop = true, hide = true },
+	["poledance2"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance2", anim = "pd_dance_02", andar = false, loop = true, hide = true },
+	["poledance3"] = { category = "normal", dict = "mini@strip_club@pole_dance@pole_dance3", anim = "pd_dance_03", andar = false, loop = true, hide = true },
 
-	["poledance4"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_001", andar = false, loop = true },
-	["poledance5"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_002", andar = false, loop = true },
-	["poledance6"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_003", andar = false, loop = true },
-	["poledance7"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_004", andar = false, loop = true },
-	["poledance8"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_005", andar = false, loop = true },
+	["poledance4"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_001", andar = false, loop = true, hide = true },
+	["poledance5"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_002", andar = false, loop = true, hide = true },
+	["poledance6"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_003", andar = false, loop = true, hide = true },
+	["poledance7"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_004", andar = false, loop = true, hide = true },
+	["poledance8"] = { category = "normal", dict = "frabi@femalepose@solo@firstpoledance", anim = "pose_poledance_005", andar = false, loop = true, hide = true },
 
-	["cuddlepartner1"] = { category = "shared", dict = "cuddlepartner1@pawuk", anim = "cuddlepartner1_clip", andar = false, loop = true, target_emote = "cuddlepartner2" },
-	["cuddlepartner2"] = { category = "shared", dict = "cuddlepartner2@pawuk", anim = "cuddlepartner2_clip", andar = false, loop = true, target_emote = "cuddlepartner1", offset = { x = 0, y = 0.4, z = 0 } },
+	["poledance9"] = { category = "normal", dict = "poledancer@anim" , anim = "poledancer_clip" , andar = false , loop = true, hide = true  },
+	["poledance10"] = { category = "normal", dict = "poledancer2@anim" , anim = "poledancer2_clip" , andar = false , loop = true, hide = true  },
+	["poledance11"] = { category = "normal", dict = "poledancer3@anim" , anim = "poledancer3_clip" , andar = false , loop = true, hide = true  },
+
+	["cuddlepartner1"] = { category = "shared", dict = "cuddlepartner1@pawuk", anim = "cuddlepartner1_clip", andar = false, hide = true, loop = true, target_emote = "cuddlepartner2" },
+	["cuddlepartner2"] = { category = "shared", dict = "cuddlepartner2@pawuk", anim = "cuddlepartner2_clip", andar = false, hide = true, loop = true, target_emote = "cuddlepartner1", offset = { x = 0, y = 0.4, z = 0 } },
 }
 
