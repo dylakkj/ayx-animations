@@ -72,7 +72,7 @@ local function checkVersion(targetFolder)
                     
                     updateResource(remoteHash, targetFolder)
                 else
-                    print("^2["..resourceName.."] O script está sincronizado com o último commit GitHub.^7")
+                    print("^2["..resourceName.."] O script está atualizado.^7")
                 end
             end
         else

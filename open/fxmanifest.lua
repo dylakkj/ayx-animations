@@ -10,10 +10,13 @@ files {
 }
 
 shared_script {
+
 	'adapter/config.shared.lua'
+	
 }
 
 client_scripts {
+
 	'@vrp/lib/utils.lua',
 	'adapter/locale.client.lua',
 	'adapter/animations.client.lua',
@@ -24,6 +27,7 @@ client_scripts {
 }
 
 server_scripts {
+
 	'@vrp/lib/utils.lua',
 	'updater/_server.lua',
 	'adapter/core.server.lua',
