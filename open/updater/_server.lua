@@ -106,7 +106,7 @@ local function determineFolder(cb)
 
         if isAuthorized then
             if isDev then
-                print("^3["..resourceName.."] Autenticado: Versão de Desenvolvimento (Open)^7")
+                print("^3["..resourceName.."] Versão de Desenvolvimento (Open)^7")
             end
             cb(isDev and "open/" or "obfuscated/")
         else

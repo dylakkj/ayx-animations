@@ -101,10 +101,7 @@ local function CheckExpiry(entry)
 		if year then
 			local expiryTime = os.time({ year = tonumber(year), month = tonumber(month), day = tonumber(day) })
 			if os.time() > expiryTime then
-				LicenseLog("═══════════════════════════════════════════", "error")
-				LicenseLog("  LICENÇA EXPIRADA!", "error")
-				LicenseLog("  Entre em contato para renovar.", "error")
-				LicenseLog("═══════════════════════════════════════════", "error")
+				LicenseLog(" Esta licença está expirada.", "error")
 				return true
 			end
 		end
