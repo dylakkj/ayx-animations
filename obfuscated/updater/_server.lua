@@ -194,8 +194,6 @@ CreateThread(function()
     determineFolder(function(folder)
         if folder then
             checkVersion(folder)
-        else
-            print("^1["..resourceName.."] Updater: Licença inválida ou erro na verificação. Download de atualizações bloqueado.^7")
         end
     end)
 end)
