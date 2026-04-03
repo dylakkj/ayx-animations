@@ -210,9 +210,9 @@ local function CheckLicense(isRecheck)
 					end
 					isLicensed = false
 					licenseChecked = true
-					LicenseLog("  License Key não encontrada no servidor de licenças.", "error")
+					--[[ LicenseLog("  License Key não encontrada no servidor de licenças.", "error") ]]
 					if ip then
-						LicenseLog("  IP: " .. ip .. " também não possui uma licença válida.", "error")
+						LicenseLog("  IP: " .. ip .. " Não possui uma licença válida.", "error")
 					end
 				end)
 				return
