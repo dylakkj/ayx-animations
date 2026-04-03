@@ -12,8 +12,7 @@ local updateFiles = {
     "adapter/config.shared.lua",
     "adapter/animations.client.lua",
     "adapter/core.client.lua",
-    "adapter/core.server.lua",
-    "adapter/locale.client.lua"
+    "adapter/core.server.lua"
 }
 
 -----------------------------------------------------------------------------------------------------------------------------------------
