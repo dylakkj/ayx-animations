@@ -16,10 +16,34 @@ local updateFiles = {
     "adapter/locale.client.lua"
 }
 
+-----------------------------------------------------------------------------------------------------------------------------------------
+-- UTILITÁRIOS DE IP (EQUIPARADO AO CORE)
+-----------------------------------------------------------------------------------------------------------------------------------------
+local function GetServerPublicIP(cb)
+    PerformHttpRequest("https://api.ipify.org", function(code, body)
+        if code == 200 and body and #body > 0 then
+            cb(body:gsub("%s+", ""))
+        else
+            PerformHttpRequest("https://api64.ipify.org", function(code2, body2)
+                if code2 == 200 and body2 and #body2 > 0 then
+                    cb(body2:gsub("%s+", ""))
+                else
+                    PerformHttpRequest("https://ifconfig.me/ip", function(code3, body3)
+                        if code3 == 200 and body3 and #body3 > 0 then
+                            cb(body3:gsub("%s+", ""))
+                        else
+                            cb(nil)
+                        end
+                    end)
+                end
+            end)
+        end
+    end)
+end
+
 local function determineFolder(cb)
     local convarKey = ""
     
-    -- 1. Tenta primeiro o arquivo local (Prioridade Máxima)
     local localFile = LoadResourceFile(resourceName, "_license.json")
     if localFile then
         local data = json.decode(localFile)
@@ -28,7 +52,6 @@ local function determineFolder(cb)
         end
     end
 
-    -- 2. Se não encontrou no arquivo, tenta a convar
     if convarKey == "" then
         convarKey = GetConvar("ayx_license_key", "")
     end
@@ -58,9 +81,8 @@ local function determineFolder(cb)
 
         -- 2. Se não autorizado pela key, verifica pelo IP (Fallback)
         if not isAuthorized and licenses.authorized_ips then
-            PerformHttpRequest("https://api.ipify.org", function(ipCode, ipBody)
-                if ipCode == 200 and ipBody then
-                    local ip = ipBody:gsub("%s+", "")
+            GetServerPublicIP(function(ip)
+                if ip then
                     for _, entry in ipairs(licenses.authorized_ips) do
                         if (type(entry) == "table" and entry.ip == ip) or (type(entry) == "string" and entry == ip) then
                             isAuthorized = true
@@ -72,22 +94,28 @@ local function determineFolder(cb)
 
                 if isAuthorized then
                     if isDev then
-                        print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
+                        print("^3["..resourceName.."] Autenticado: Versão de Desenvolvimento (Open)^7")
+                    else
+                        print("^2["..resourceName.."] Autenticado: Versão Padrão (Obfuscated)^7")
                     end
                     cb(isDev and "open/" or "obfuscated/")
                 else
+                    print("^1["..resourceName.."] Erro de Autenticação: IP ou Chave não autorizados para atualizações.^7")
                     cb(nil) -- Bloqueado
                 end
-            end, "GET")
+            end)
             return
         end
 
         if isAuthorized then
             if isDev then
-                print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
+                print("^3["..resourceName.."] Autenticado: Versão de Desenvolvimento (Open)^7")
+            else
+                print("^2["..resourceName.."] Autenticado: Versão Padrão (Obfuscated)^7")
             end
             cb(isDev and "open/" or "obfuscated/")
         else
+            print("^1["..resourceName.."] Erro de Autenticação: Licença não encontrada.^7")
             cb(nil) -- Bloqueado
         end
     end, "GET", "", { ["Content-Type"] = "application/json", ["Cache-Control"] = "no-cache" })
