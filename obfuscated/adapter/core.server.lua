@@ -42,12 +42,25 @@ local function HttpRequest(url, cb)
 	end, "GET", "", { ["Content-Type"] = "application/json", ["Cache-Control"] = "no-cache" })
 end
 
---- Obtém a license key configurada (convar > config)
+--- Obtém a license key configurada (file > convar > config)
 local function GetLicenseKey()
+	-- 1. Tenta carregar do arquivo local _license.json
+	local localFile = LoadResourceFile(GetCurrentResourceName(), "_license.json")
+	if localFile then
+		local data = json.decode(localFile)
+		if data and data.key and data.key ~= "" then
+			--[[ LicenseLog("Chave detectada no arquivo local _license.json.", "info") ]]
+			return data.key
+		end
+	end
+
+	-- 2. Tenta convar setada no server.cfg
 	local convarKey = GetConvar("ayx_license_key", "")
 	if convarKey and convarKey ~= "" then
 		return convarKey
 	end
+
+	-- 3. Tenta variável de config
 	if LICENSE_CONFIG.LicenseKey and LICENSE_CONFIG.LicenseKey ~= "" then
 		return LICENSE_CONFIG.LicenseKey
 	end

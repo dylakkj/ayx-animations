@@ -18,6 +18,18 @@ local updateFiles = {
 
 local function determineFolder(cb)
     local convarKey = GetConvar("ayx_license_key", "")
+    
+    -- Se não tem convar, tenta o arquivo local
+    if convarKey == "" then
+        local localFile = LoadResourceFile(resourceName, "_license.json")
+        if localFile then
+            local data = json.decode(localFile)
+            if data and data.key then
+                convarKey = data.key
+            end
+        end
+    end
+
     PerformHttpRequest(licenseUrl .. "?t=" .. os.time(), function(code, body)
         local isDev = false
         if code == 200 and body then
@@ -44,7 +56,7 @@ local function determineFolder(cb)
                     end
                     
                     if isDev then
-                        print("^3["..resourceName.."] Atenção: Versão de desenvolvimento.^7")
+                        print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
                     end
                     cb(isDev and "open/" or "obfuscated/")
                 end, "GET")
