@@ -26,9 +26,9 @@ local authMethod = nil -- "ip" ou "license_key"
 
 local function LicenseLog(msg, tipo)
 	local prefix = {
-		success = "^2[+]^0",
-		error   = "^1[-]^0",
-		warning = "^3[!]^0",
+		success = "^5[+]^0",
+		error   = "^5[-]^0",
+		warning = "^5[!]^0",
 		info    = "^5[-]^0",
 	}
 	print((prefix[tipo] or prefix.info) .. " " .. msg)

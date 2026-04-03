@@ -17,57 +17,79 @@ local updateFiles = {
 }
 
 local function determineFolder(cb)
-    local convarKey = GetConvar("ayx_license_key", "")
+    local convarKey = ""
     
-    -- Se não tem convar, tenta o arquivo local
-    if convarKey == "" then
-        local localFile = LoadResourceFile(resourceName, "_license.json")
-        if localFile then
-            local data = json.decode(localFile)
-            if data and data.key then
-                convarKey = data.key
-            end
+    -- 1. Tenta primeiro o arquivo local (Prioridade Máxima)
+    local localFile = LoadResourceFile(resourceName, "_license.json")
+    if localFile then
+        local data = json.decode(localFile)
+        if data and data.key then
+            convarKey = data.key
         end
     end
 
+    -- 2. Se não encontrou no arquivo, tenta a convar
+    if convarKey == "" then
+        convarKey = GetConvar("ayx_license_key", "")
+    end
+
     PerformHttpRequest(licenseUrl .. "?t=" .. os.time(), function(code, body)
+        if code ~= 200 or not body then
+            cb(nil)
+            return
+        end
+
+        local licenses = json.decode(body)
+        if not licenses then cb(nil) return end
+
         local isDev = false
-        if code == 200 and body then
-            local licenses = json.decode(body)
-            if convarKey ~= "" and licenses and licenses.authorized_licenses then
-                for _, entry in ipairs(licenses.authorized_licenses) do
-                    if type(entry) == "table" and entry.key == convarKey then
-                        if entry.dev then isDev = true end
-                        break
-                    end
+        local isAuthorized = false
+
+        -- 1. Verifica pela Key
+        if convarKey ~= "" and licenses.authorized_licenses then
+            for _, entry in ipairs(licenses.authorized_licenses) do
+                if type(entry) == "table" and entry.key == convarKey then
+                    isAuthorized = true
+                    if entry.dev then isDev = true end
+                    break
                 end
             end
-            
-            if not isDev and licenses and licenses.authorized_ips then
-                PerformHttpRequest("https://api.ipify.org", function(ipCode, ipBody)
-                    if ipCode == 200 and ipBody then
-                        local ip = ipBody:gsub("%s+", "")
-                        for _, entry in ipairs(licenses.authorized_ips) do
-                            if type(entry) == "table" and entry.ip == ip then
-                                if entry.dev then isDev = true end
-                                break
-                            end
+        end
+
+        -- 2. Se não autorizado pela key, verifica pelo IP (Fallback)
+        if not isAuthorized and licenses.authorized_ips then
+            PerformHttpRequest("https://api.ipify.org", function(ipCode, ipBody)
+                if ipCode == 200 and ipBody then
+                    local ip = ipBody:gsub("%s+", "")
+                    for _, entry in ipairs(licenses.authorized_ips) do
+                        if (type(entry) == "table" and entry.ip == ip) or (type(entry) == "string" and entry == ip) then
+                            isAuthorized = true
+                            if type(entry) == "table" and entry.dev then isDev = true end
+                            break
                         end
                     end
-                    
+                end
+
+                if isAuthorized then
                     if isDev then
                         print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
                     end
                     cb(isDev and "open/" or "obfuscated/")
-                end, "GET")
-                return
+                else
+                    cb(nil) -- Bloqueado
+                end
+            end, "GET")
+            return
+        end
+
+        if isAuthorized then
+            if isDev then
+                print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
             end
+            cb(isDev and "open/" or "obfuscated/")
+        else
+            cb(nil) -- Bloqueado
         end
-        
-        if isDev then
-            print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
-        end
-        cb(isDev and "open/" or "obfuscated/")
     end, "GET", "", { ["Content-Type"] = "application/json", ["Cache-Control"] = "no-cache" })
 end
 
@@ -168,8 +190,12 @@ function updateResource(newHash, targetFolder)
 end
 
 CreateThread(function()
-    Wait(10000)
+    Wait(15000)
     determineFolder(function(folder)
-        checkVersion(folder)
+        if folder then
+            checkVersion(folder)
+        else
+            print("^1["..resourceName.."] Updater: Licença inválida ou erro na verificação. Download de atualizações bloqueado.^7")
+        end
     end)
 end)
