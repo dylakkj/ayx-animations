@@ -97,7 +97,7 @@ local function determineFolder(cb)
                     end
                     cb(isDev and "open/" or "obfuscated/")
                 else
-                    print("^1["..resourceName.."] Erro de Autenticação: IP ou Chave não autorizados para atualizações.^7")
+                    --[[ print("^1["..resourceName.."] Erro de Autenticação: IP ou Chave não autorizados para atualizações.^7") ]]
                     cb(nil) -- Bloqueado
                 end
             end)
