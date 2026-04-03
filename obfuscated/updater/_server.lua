@@ -65,9 +65,14 @@ local function checkVersion(targetFolder)
         if errorCode == 200 then
             local remoteVersion = resultData:match('AyxAnimationsUpdater.Version = "(.-)"')
             
-            if remoteVersion and remoteVersion ~= localVersion then
-                print("^2["..resourceName.."] Nova versão encontrada (" .. targetFolder .. "): " .. remoteVersion .. " (Local: " .. localVersion .. ")^7")
-                updateResource(remoteVersion, targetFolder)
+            -- Normaliza as quebras de linha para evitar falsos positivos
+            local safeLocal = localVersionFile:gsub("\r\n", "\n")
+            local safeRemote = resultData:gsub("\r\n", "\n")
+            
+            -- Compara o conteúdo completo do _version.lua (para detectar diferenças de branchs com a mesma versão)
+            if safeRemote ~= safeLocal then
+                print("^2["..resourceName.."] Atualização ou mudança de ambiente detectada (" .. targetFolder .. "): " .. (remoteVersion or "N/A") .. " (Local: " .. (localVersion or "N/A") .. ")^7")
+                updateResource(remoteVersion or "N/A", targetFolder)
             else
                 print("^2["..resourceName.."] O script está utilizando a última versão (" .. targetFolder .. ").^7")
             end
