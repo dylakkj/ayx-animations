@@ -44,10 +44,18 @@ local function determineFolder(cb)
                             end
                         end
                     end
+                    
+                    if isDev then
+                        print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
+                    end
                     cb(isDev and "open/" or "obfuscated/")
                 end, "GET")
                 return
             end
+        end
+        
+        if isDev then
+            print("^3["..resourceName.."] Atenção: voce está utilizando a versão aberta de desenvolvimento^7")
         end
         cb(isDev and "open/" or "obfuscated/")
     end, "GET", "", { ["Content-Type"] = "application/json", ["Cache-Control"] = "no-cache" })
@@ -67,8 +75,7 @@ local function checkVersion(targetFolder)
                 local remoteHash = commits[1].sha
                 
                 if localData.hash ~= remoteHash then
-                    print("^2["..resourceName.."] Atualização encontrada^7")
-                    --[[ print("^3["..resourceName.."] Hash: " .. remoteHash:sub(1,7) .. "^7") ]]
+                    print("^2["..resourceName.."] Nova atualização encontrada:^7")
                     
                     updateResource(remoteHash, targetFolder)
                 else
