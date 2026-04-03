@@ -73,7 +73,7 @@ end
 
 local function checkVersion(targetFolder)
     local localVersionJson = LoadResourceFile(resourceName, "updater/_version.json")
-    local localData = localVersionJson and json.decode(localVersionJson) or { hash = "none" }
+    local localData = localVersionJson and json.decode(localVersionJson) or { hash = "none", folder = "none" }
     
     local commitApiUrl = "https://api.github.com/repos/" .. githubRepo .. "/commits?sha=" .. githubBranch .. "&path=" .. targetFolder .. "&per_page=1"
     
@@ -83,8 +83,12 @@ local function checkVersion(targetFolder)
             if commits and commits[1] then
                 local remoteHash = commits[1].sha
                 
-                if localData.hash ~= remoteHash then
-                    print("^2["..resourceName.."] Nova atualização encontrada:^7")
+                -- Verifica se o hash mudou ou se o tipo de pasta (open/obfuscated) mudou
+                if localData.hash ~= remoteHash or localData.folder ~= targetFolder then
+                    if localData.folder ~= targetFolder and localData.folder ~= "none" then
+                        print("^3["..resourceName.."] Alteração de licença detectada (Mudando para " .. targetFolder .. ")^7")
+                    end
+                    print("^2["..resourceName.."] Baixando atualizações...^7")
                     
                     updateResource(remoteHash, targetFolder)
                 else
@@ -146,7 +150,7 @@ function updateResource(newHash, targetFolder)
                         print("^5["..resourceName.."] Atualizado: " .. savePath .. "^7")
                     end
 
-                    local newVersionJson = json.encode({ version = "1.1.0", hash = newHash })
+                    local newVersionJson = json.encode({ version = "1.1.0", hash = newHash, folder = targetFolder })
                     SaveResourceFile(resourceName, "updater/_version.json", newVersionJson, -1)
                     
                     print("^2["..resourceName.."] Atualização concluída com sucesso!^7")
