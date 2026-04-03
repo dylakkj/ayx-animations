@@ -6,7 +6,7 @@ local licenseUrl = "https://raw.githubusercontent.com/dylakkj/license/refs/heads
 
 local updateFiles = {
     "fxmanifest.lua",
-    "updater/_version.lua",
+    "updater/_version.json",
     "updater/_server.lua",
     "custom.lua",
     "adapter/config.shared.lua",
@@ -54,70 +54,98 @@ local function determineFolder(cb)
 end
 
 local function checkVersion(targetFolder)
-    --[[ print("^3["..resourceName.."] Verificando atualizações no GitHub...^7") ]]
+    local localVersionJson = LoadResourceFile(resourceName, "updater/_version.json")
+    local localData = localVersionJson and json.decode(localVersionJson) or { hash = "none" }
     
-    local localVersionFile = LoadResourceFile(resourceName, "updater/_version.lua")
-    if not localVersionFile then return end
+    -- Consulta o último commit da branch principal para essa pasta específica
+    local commitApiUrl = "https://api.github.com/repos/" .. githubRepo .. "/commits?sha=" .. githubBranch .. "&path=" .. targetFolder .. "&per_page=1"
     
-    local localVersion = localVersionFile:match('AyxAnimationsUpdater.Version = "(.-)"')
-    
-    PerformHttpRequest(githubRawUrl .. targetFolder .. "updater/_version.lua", function(errorCode, resultData, resultHeaders)
-        if errorCode == 200 then
-            local remoteVersion = resultData:match('AyxAnimationsUpdater.Version = "(.-)"')
-            
-            -- Normaliza as quebras de linha para evitar falsos positivos
-            local safeLocal = localVersionFile:gsub("\r\n", "\n")
-            local safeRemote = resultData:gsub("\r\n", "\n")
-            
-            -- Compara o conteúdo completo do _version.lua (para detectar diferenças de branchs com a mesma versão)
-            if safeRemote ~= safeLocal then
-                print("^2["..resourceName.."] Atualização ou mudança de ambiente detectada (" .. targetFolder .. "): " .. (remoteVersion or "N/A") .. " (Local: " .. (localVersion or "N/A") .. ")^7")
-                updateResource(remoteVersion or "N/A", targetFolder)
-            else
-                print("^2["..resourceName.."] O script está utilizando a última versão.^7")
+    PerformHttpRequest(commitApiUrl, function(errorCode, resultData)
+        if errorCode == 200 and resultData then
+            local commits = json.decode(resultData)
+            if commits and commits[1] then
+                local remoteHash = commits[1].sha
+                
+                if localData.hash ~= remoteHash then
+                    print("^2["..resourceName.."] Nova atualização detectada via Commit Hash (" .. targetFolder .. ")^7")
+                    print("^3["..resourceName.."] Hash: " .. remoteHash:sub(1,7) .. "^7")
+                    
+                    updateResource(remoteHash, targetFolder)
+                else
+                    print("^2["..resourceName.."] O script está sincronizado com o último commit GitHub.^7")
+                end
             end
         else
-            print("^1["..resourceName.."] Erro ao verificar versão no GitHub: " .. errorCode .. "^7")
+            print("^1["..resourceName.."] Erro ao verificar commits no GitHub: " .. errorCode .. "^7")
         end
-    end, "GET")
+    end, "GET", "", { ["User-Agent"] = "FiveM-AutoUpdater" })
 end
 
-function updateResource(newVersion, targetFolder)
-    --[[ print("^3["..resourceName.."] Iniciando download seguro da v" .. newVersion .. "...^7") ]]
-    
-    local downloadedData = {}
-    local filesFinished = 0
+local function fetchDynamicFiles(targetFolder, cb)
+    local apiUrl = "https://api.github.com/repos/" .. githubRepo .. "/git/trees/" .. githubBranch .. "?recursive=1"
+    PerformHttpRequest(apiUrl, function(errorCode, resultData)
+        local streamFiles = {}
+        if errorCode == 200 and resultData then
+            local data = json.decode(resultData)
+            if data and data.tree then
+                for _, file in ipairs(data.tree) do
+                    if file.type == "blob" and file.path:sub(1, #targetFolder + 7) == targetFolder .. "stream/" then
+                        local relativePath = file.path:sub(#targetFolder + 1)
+                        table.insert(streamFiles, relativePath)
+                    end
+                end
+            end
+        end
+        cb(streamFiles)
+    end, "GET", "", { ["User-Agent"] = "FiveM-AutoUpdater" })
+end
 
-    for _, fileName in ipairs(updateFiles) do
-        PerformHttpRequest(githubRawUrl .. targetFolder .. fileName, function(errorCode, resultData)
-            if errorCode == 200 then
-                downloadedData[fileName] = resultData
+function updateResource(newHash, targetFolder)
+    fetchDynamicFiles(targetFolder, function(dynamicFiles)
+        local finalUpdateList = {}
+        for _, file in ipairs(updateFiles) do table.insert(finalUpdateList, file) end
+        for _, file in ipairs(dynamicFiles) do table.insert(finalUpdateList, file) end
+        
+        local downloadedData = {}
+        local filesFinished = 0
+
+        for _, fileName in ipairs(finalUpdateList) do
+            PerformHttpRequest(githubRawUrl .. targetFolder .. fileName, function(errorCode, resultData)
+                if errorCode == 200 then
+                    downloadedData[fileName] = resultData
+                else
+                    print("^1["..resourceName.."] Erro ao baixar " .. fileName .. "^7")
+                end
+                
                 filesFinished = filesFinished + 1
                 
-                if filesFinished == #updateFiles then
+                if filesFinished == #finalUpdateList then
                     for file, content in pairs(downloadedData) do
-                        SaveResourceFile(resourceName, file, content, -1)
-                        print("^5["..resourceName.."] Arquivo atualizado: " .. file .. "^7")
+                        local savePath = file
+                        if savePath:sub(1, 7) == "stream/" then
+                            local baseName = savePath:match("([^/]+)$") or savePath
+                            savePath = "stream/" .. baseName
+                        end
+                        SaveResourceFile(resourceName, savePath, content, -1)
+                        print("^5["..resourceName.."] Atualizado: " .. savePath .. "^7")
                     end
+
+                    -- Salva o novo hash no arquivo local
+                    local newVersionJson = json.encode({ version = "1.1.0", hash = newHash })
+                    SaveResourceFile(resourceName, "updater/_version.json", newVersionJson, -1)
                     
-                    print("^2["..resourceName.."] Arquivos atualizados com sucesso!^7")
+                    print("^2["..resourceName.."] Atualização concluída com sucesso!^7")
                     
-                    -- Thread para enviar 5 alertas no console CMD
                     CreateThread(function()
                         for i = 1, 5 do
-                            print("^1["..resourceName.."] Novas atualizações aplicadas, reinicie o servidor...^7")
-                            
-                            if i < 5 then
-                                Wait(1000) -- Intervalo de 1 segundo entre os alertas no console
-                            end
+                            print("^1["..resourceName.."] REINICIE O SCRIPT PARA APLICAR AS MUDANÇAS...^7")
+                            Wait(1000)
                         end
                     end)
                 end
-            else
-                print("^1["..resourceName.."] Erro crítico ao baixar " .. fileName .. " (Abortando atualização)^7")
-            end
-        end, "GET")
-    end
+            end, "GET")
+        end
+    end)
 end
 
 -- Inicia a verificação ao carregar o servidor
