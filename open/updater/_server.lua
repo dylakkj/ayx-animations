@@ -67,8 +67,8 @@ local function checkVersion(targetFolder)
                 local remoteHash = commits[1].sha
                 
                 if localData.hash ~= remoteHash then
-                    print("^2["..resourceName.."] Nova atualização detectada via Commit Hash (" .. targetFolder .. ")^7")
-                    print("^3["..resourceName.."] Hash: " .. remoteHash:sub(1,7) .. "^7")
+                    print("^2["..resourceName.."] Atualização encontrada^7")
+                    --[[ print("^3["..resourceName.."] Hash: " .. remoteHash:sub(1,7) .. "^7") ]]
                     
                     updateResource(remoteHash, targetFolder)
                 else
@@ -138,7 +138,7 @@ function updateResource(newHash, targetFolder)
                     
                     CreateThread(function()
                         for i = 1, 5 do
-                            print("^1["..resourceName.."] REINICIE O SCRIPT PARA APLICAR AS MUDANÇAS...^7")
+                            print("^1["..resourceName.."] Novas atualizações aplicadas, reinicie o servidor...^7")
                             Wait(1000)
                         end
                     end)

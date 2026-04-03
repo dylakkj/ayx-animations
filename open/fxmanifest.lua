@@ -25,7 +25,6 @@ client_scripts {
 
 server_scripts {
 	'@vrp/lib/utils.lua',
-	'updater/_version.lua',
 	'updater/_server.lua',
 	'adapter/core.server.lua',
 
