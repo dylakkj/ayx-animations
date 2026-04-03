@@ -97,6 +97,8 @@ local CustomAnims = {
 		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.50, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
 	},
 
+	["continencia"] = { category = "normal", dict = "mp_player_int_uppersalute", anim = "mp_player_int_salute", andar = true, loop = true },
+	["continencia2"] = { category = "normal", dict = "salutepose@animation" , anim = "salutepose_clip" , andar = false , loop = false },
 
 }
 
