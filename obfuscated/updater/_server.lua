@@ -74,7 +74,7 @@ local function checkVersion(targetFolder)
                 print("^2["..resourceName.."] Atualização ou mudança de ambiente detectada (" .. targetFolder .. "): " .. (remoteVersion or "N/A") .. " (Local: " .. (localVersion or "N/A") .. ")^7")
                 updateResource(remoteVersion or "N/A", targetFolder)
             else
-                print("^2["..resourceName.."] O script está utilizando a última versão (" .. targetFolder .. ").^7")
+                print("^2["..resourceName.."] O script está utilizando a última versão.^7")
             end
         else
             print("^1["..resourceName.."] Erro ao verificar versão no GitHub: " .. errorCode .. "^7")
