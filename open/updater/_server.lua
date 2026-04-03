@@ -141,7 +141,7 @@ local function checkVersion(targetFolder)
                 end
             end
         else
-            print("^1["..resourceName.."] Erro ao verificar commits no GitHub: " .. errorCode .. "^7")
+            print("^1["..resourceName.."] Erro ao obter informações do servidor de atualizações: " .. errorCode .. "^7")
         end
     end, "GET", "", { ["User-Agent"] = "FiveM-AutoUpdater" })
 end
