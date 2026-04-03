@@ -31,6 +31,4 @@ server_scripts {
 
 }
 
-escrow_ignore {
-	"custom.lua",
-}
+data_file "DLC_ITYP_REQUEST" "stream/hype_folia_flags"

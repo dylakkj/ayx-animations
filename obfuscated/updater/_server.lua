@@ -82,42 +82,69 @@ local function checkVersion(targetFolder)
     end, "GET")
 end
 
-function updateResource(newVersion, targetFolder)
-    --[[ print("^3["..resourceName.."] Iniciando download seguro da v" .. newVersion .. "...^7") ]]
-    
-    local downloadedData = {}
-    local filesFinished = 0
+local function fetchDynamicFiles(targetFolder, cb)
+    -- Consulta a Tree recursiva da branch
+    local apiUrl = "https://api.github.com/repos/" .. githubRepo .. "/git/trees/" .. githubBranch .. "?recursive=1"
+    PerformHttpRequest(apiUrl, function(errorCode, resultData, resultHeaders)
+        local streamFiles = {}
+        if errorCode == 200 and resultData then
+            local data = json.decode(resultData)
+            if data and data.tree then
+                for _, file in ipairs(data.tree) do
+                    -- Verifica se o path é um arquivo e se está dentro da pasta stream do targetFolder
+                    if file.type == "blob" and file.path:sub(1, #targetFolder + 7) == targetFolder .. "stream/" then
+                        -- Remove o targetFolder do incio para encaixar na estrutura atual do updateFiles ("stream/arquivo.ydr")
+                        local relativePath = file.path:sub(#targetFolder + 1)
+                        table.insert(streamFiles, relativePath)
+                    end
+                end
+            end
+        else
+            print("^1["..resourceName.."] Aviso: Nao foi possivel carregar lista dinamica de stream (Erro API: " .. errorCode .. ").^7")
+        end
+        cb(streamFiles)
+    end, "GET", "", { ["User-Agent"] = "FiveM-AutoUpdater" })
+end
 
-    for _, fileName in ipairs(updateFiles) do
-        PerformHttpRequest(githubRawUrl .. targetFolder .. fileName, function(errorCode, resultData)
-            if errorCode == 200 then
-                downloadedData[fileName] = resultData
+function updateResource(newVersion, targetFolder)
+    fetchDynamicFiles(targetFolder, function(dynamicFiles)
+        local finalUpdateList = {}
+        for _, file in ipairs(updateFiles) do table.insert(finalUpdateList, file) end
+        for _, file in ipairs(dynamicFiles) do table.insert(finalUpdateList, file) end
+        
+        local downloadedData = {}
+        local filesFinished = 0
+
+        for _, fileName in ipairs(finalUpdateList) do
+            PerformHttpRequest(githubRawUrl .. targetFolder .. fileName, function(errorCode, resultData)
+                if errorCode == 200 then
+                    downloadedData[fileName] = resultData
+                else
+                    print("^1["..resourceName.."] Erro critico ao baixar " .. fileName .. " (Pode ser ignorado se for placeholder)^7")
+                end
+                
                 filesFinished = filesFinished + 1
                 
-                if filesFinished == #updateFiles then
+                if filesFinished == #finalUpdateList then
                     for file, content in pairs(downloadedData) do
                         SaveResourceFile(resourceName, file, content, -1)
                         print("^5["..resourceName.."] Arquivo atualizado: " .. file .. "^7")
                     end
                     
-                    print("^2["..resourceName.."] Arquivos atualizados com sucesso!^7")
+                    print("^2["..resourceName.."] Arquivos atualizados com sucesso ("..#finalUpdateList.." arquivos avaliados)!^7")
                     
                     -- Thread para enviar 5 alertas no console CMD
                     CreateThread(function()
                         for i = 1, 5 do
-                            print("^1["..resourceName.."] Novas atualizações aplicadas, reinicie o servidor...^7")
+                            print("^1["..resourceName.."] Novas atualizacoes aplicadas, reinicie o servidor...^7")
                             
-                            if i < 5 then
-                                Wait(1000) -- Intervalo de 1 segundo entre os alertas no console
-                            end
+                            if i < 5 then Wait(1000) end
                         end
                     end)
                 end
-            else
-                print("^1["..resourceName.."] Erro crítico ao baixar " .. fileName .. " (Abortando atualização)^7")
-            end
-        end, "GET")
-    end
+            end, "GET")
+        end
+    end)
 end
 
 -- Inicia a verificação ao carregar o servidor
