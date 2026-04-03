@@ -127,8 +127,13 @@ function updateResource(newVersion, targetFolder)
                 
                 if filesFinished == #finalUpdateList then
                     for file, content in pairs(downloadedData) do
-                        SaveResourceFile(resourceName, file, content, -1)
-                        print("^5["..resourceName.."] Arquivo atualizado: " .. file .. "^7")
+                        local savePath = file
+                        if savePath:sub(1, 7) == "stream/" then
+                            local baseName = savePath:match("([^/]+)$") or savePath
+                            savePath = "stream/" .. baseName
+                        end
+                        SaveResourceFile(resourceName, savePath, content, -1)
+                        print("^5["..resourceName.."] Arquivo atualizado: " .. savePath .. "^7")
                     end
                     
                     print("^2["..resourceName.."] Arquivos atualizados com sucesso ("..#finalUpdateList.." arquivos avaliados)!^7")
