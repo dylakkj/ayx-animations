@@ -9,7 +9,7 @@ local updateFiles = {
     "updater/_version.json",
     "updater/_server.lua",
     "custom.lua",
-    "adapter/config.shared.lua",
+    "adapter/config.shared.lua",    
     "adapter/animations.client.lua",
     "adapter/core.client.lua",
     "adapter/core.server.lua"
