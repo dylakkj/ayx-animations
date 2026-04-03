@@ -32,7 +32,70 @@ local CustomAnims = {
 
 	["customdanca"] = { category = "dance", dict = "pfflytotokyo@animations", anim = "pfflytotokyoclip", walk = false, loop = true },
 
-
+	["ovudopascoa1"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg1_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa2"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg2_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa3"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg3_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa4"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg4_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa5"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg5_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa6"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg6_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa7"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg7_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
+	["ovudopascoa8"] = { 
+		category = "normal", 
+		dict = "anim@heists@box_carry@", 
+		anim = "idle", 
+		prop = "ghsxth_hype_pascoa_egg8_s",
+		walk = true, loop = true,
+		flag = 50, mao = 60309, altura = 0.025, pos1 = 0.08, pos2 = 0.255, pos3 = -50.0, pos4 = 290.0, pos5 = 0.0 
+	},
 
 
 }
