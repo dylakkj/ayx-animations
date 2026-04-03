@@ -566,7 +566,7 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 				if Ped == PlayerPedId() then
 					CurrentSharedTestPed = newTestPed
 				end
-				-- Pré-carrega dicts antes de executar
+
 				if SelectedEmote.dict and SelectedEmote.dict ~= "Scenario" then LoadAnimDict(SelectedEmote.dict) end
 				local _te2 = GetEmoteOnTable(SelectedEmote.target_emote)
 				if _te2 and _te2.dict and _te2.dict ~= "Scenario" then LoadAnimDict(_te2.dict) end
@@ -878,9 +878,6 @@ RegisterNetEvent("ayxlz_emotes:requestFromCommand", function(targetServerId, emo
 	TriggerEvent("Notify","Animação","Solicitação de animação enviada.","amarelo",5000)
 	TriggerServerEvent("ayxlz_emotes:request", targetServerId, emoteName, targetEmote, false)
 end)
------------------------------------------------------------------------------------------------------------------------------------------
--- COMMAND EMOTE (FROM /A or /Y)
------------------------------------------------------------------------------------------------------------------------------------------
 RegisterNetEvent("ayxlz_emotes:commandEmote")
 AddEventHandler("ayxlz_emotes:commandEmote", function(emoteName, isFriend, bypassExclusive)
 	if not IsClientLicensed() then return end
@@ -939,7 +936,6 @@ AddEventHandler("ayxlz_emotes:forceCommandEmote", function(emoteName)
 
 		if ClosestTestPed then
 			CurrentSharedTestPed = ClosestTestPed
-			-- Pré-carrega dicts antes de executar
 			if SelectedEmote.dict and SelectedEmote.dict ~= "Scenario" then LoadAnimDict(SelectedEmote.dict) end
 			local targetEmoteData = GetEmoteOnTable(SelectedEmote.target_emote)
 			if targetEmoteData and targetEmoteData.dict and targetEmoteData.dict ~= "Scenario" then LoadAnimDict(targetEmoteData.dict) end
@@ -1123,25 +1119,16 @@ AddEventHandler("ayxlz_emotes:playSharedEmoteSync", function(syncData)
 	end
 	
 	if role == "anchor" then
-		-------------------------------------------------------------------------
-		-- ÂNCORA (Player 1 - quem enviou a solicitação)
-		-- Congela na posição exata e executa a animação
-		-------------------------------------------------------------------------
-		
 		if not skipPositioning then
-			-- Garante posição exata do servidor (apenas se NÃO estiver em veículo com anim de carro)
 			SetEntityCoordsNoOffset(Ped, anchor.x, anchor.y, anchor.z, false, false, false)
 			SetEntityHeading(Ped, anchor.h)
 			FreezeEntityPosition(Ped, true)
 			
-			-- Pausa breve para o ped estabilizar na posição
 			Wait(100)
 		end
 		
-		-- Executa a animação (dict já carregado = execução instantânea)
 		local targetPed = targetNetId ~= -1 and NetToPed(targetNetId) or -1
 		
-		-- Desabilita colisão entre os dois peds para evitar que o motor do jogo empurre o âncora
 		if targetPed ~= -1 and DoesEntityExist(targetPed) then
 			SetEntityNoCollisionEntity(Ped, targetPed, true)
 			SetEntityNoCollisionEntity(targetPed, Ped, true)
@@ -1149,51 +1136,36 @@ AddEventHandler("ayxlz_emotes:playSharedEmoteSync", function(syncData)
 		
 		ExecuteEmote(emoteName, nil, targetPed, false, true)
 		
-		-- Verifica se o target_emote do parceiro tem offset - se sim, mantém frozen
 		local targetEmoteData = SelectedEmote.target_emote and GetEmoteOnTable(SelectedEmote.target_emote)
 		local partnerHasOffset = targetEmoteData and targetEmoteData.offset
 		
-		-- Descongela após a animação iniciar (se não tiver offset/attach que mantenha frozen)
 		CreateThread(function()
 			Wait(500)
 			if not skipPositioning and CurrentAnimation and not CurrentAnimation.offset and not CurrentAnimation.attach and not partnerHasOffset then
 				FreezeEntityPosition(Ped, false)
 			end
 			
-			-- Mantém a colisão desabilitada enquanto a animação shared estiver ativa
 			while CurrentAnimation and CurrentAnimation.category == "shared" and targetPed ~= -1 and DoesEntityExist(targetPed) do
 				SetEntityNoCollisionEntity(Ped, targetPed, true)
 				Wait(500)
 			end
 			
-			-- Restaura colisão quando a animação terminar
 			if DoesEntityExist(Ped) then
 				SetEntityCollision(Ped, true, true)
 			end
 		end)
 		
 	elseif role == "synced" then
-		-------------------------------------------------------------------------
-		-- SINCRONIZADO (Player 2 - quem aceitou a solicitação)
-		-- Usa as coordenadas do âncora do servidor para calcular posição
-		-- Nota: o dict já foi pré-carregado acima, então o Wait serve apenas
-		-- para dar tempo do âncora se posicionar
-		-------------------------------------------------------------------------
-		
-		-- Espera um momento para o âncora estabilizar
 		Wait(200)
 		
 		local targetPed = targetNetId ~= -1 and NetToPed(targetNetId) or -1
 		
-		-- Desabilita colisão entre os dois peds para evitar empurrão
 		if targetPed ~= -1 and DoesEntityExist(targetPed) then
 			SetEntityNoCollisionEntity(Ped, targetPed, true)
 			SetEntityNoCollisionEntity(targetPed, Ped, true)
 		end
 		
 		if not skipPositioning then
-			-- Calcula a posição do Player 2 usando as coordenadas do servidor
-			-- (apenas se NÃO estiver em veículo com anim de carro)
 			if SelectedEmote.offset and targetPed ~= -1 then
 				local Offset = SelectedEmote.offset
 				local offX = Offset.x or 0.0
@@ -1201,12 +1173,10 @@ AddEventHandler("ayxlz_emotes:playSharedEmoteSync", function(syncData)
 				local offZ = Offset.z or 0.0
 				local offH = anchor.h + (Offset.h or 180.0)
 				
-				-- Calcula offset usando as coordenadas do servidor (âncora) em vez do ped desincronizado
 				local anchorHeadingRad = math.rad(anchor.h)
 				local cosH = math.cos(anchorHeadingRad)
 				local sinH = math.sin(anchorHeadingRad)
 				
-				-- Rotaciona o offset pelo heading do âncora (como GetOffsetFromEntityInWorldCoords faria)
 				local worldOffX = anchor.x + (offX * cosH - offY * sinH)
 				local worldOffY = anchor.y + (offX * sinH + offY * cosH)
 				local worldOffZ = anchor.z + offZ
@@ -1215,11 +1185,8 @@ AddEventHandler("ayxlz_emotes:playSharedEmoteSync", function(syncData)
 				SetEntityHeading(Ped, offH)
 				FreezeEntityPosition(Ped, true)
 				
-				-- Pausa para estabilizar
 				Wait(100)
 			elseif SelectedEmote.attach and targetPed ~= -1 then
-				-- Para attach, apenas posiciona perto do âncora
-				-- O attach será feito pelo ExecuteEmote normalmente
 				local anchorHeadingRad = math.rad(anchor.h)
 				local nearX = anchor.x + math.cos(anchorHeadingRad) * 0.5
 				local nearY = anchor.y + math.sin(anchorHeadingRad) * 0.5
@@ -1229,17 +1196,14 @@ AddEventHandler("ayxlz_emotes:playSharedEmoteSync", function(syncData)
 			end
 		end
 		
-		-- Executa a animação com o target ped (dict já carregado = execução instantânea)
 		ExecuteEmote(emoteName, nil, targetPed, false, true)
 		
-		-- Mantém a colisão desabilitada enquanto a animação shared estiver ativa
 		CreateThread(function()
 			while CurrentAnimation and CurrentAnimation.category == "shared" and targetPed ~= -1 and DoesEntityExist(targetPed) do
 				SetEntityNoCollisionEntity(Ped, targetPed, true)
 				Wait(500)
 			end
 			
-			-- Restaura colisão quando a animação terminar
 			if DoesEntityExist(Ped) then
 				SetEntityCollision(Ped, true, true)
 			end
@@ -1598,7 +1562,6 @@ AddEventHandler("ayxlz_emotes:syncPedAppearanceCli", function(netId, originalSer
 					end
 				end
 				
-				-- Se o player estiver longe (ou for inatingível), preenche de forma forçada
 				if not cloned and pedData then
 					for i = 0, 11 do
 						if pedData.components[i] then SetPedComponentVariation(newTestPed, i, pedData.components[i][1], pedData.components[i][2], pedData.components[i][3]) end
@@ -1764,24 +1727,17 @@ AddEventHandler("ayxlz_emotes:animPedCoupleCli", function(emoteName)
 end)
 
 -----------------------------------------------------------------------------------------------------------------------------------------
--- CLEANUP AO PARAR O RESOURCE (ensure/restart)
------------------------------------------------------------------------------------------------------------------------------------------
 AddEventHandler("onResourceStop", function(resourceName)
 	if resourceName ~= GetCurrentResourceName() then return end
 	
 	local Ped = PlayerPedId()
 	
-	---------------------------------------------------------------------------
-	-- 1. DELETAR TODOS OS TEST PEDS (/spawnped e /spawnped2)
-	---------------------------------------------------------------------------
 	if #TestPeds > 0 then
 		for idx, testPed in ipairs(TestPeds) do
-			-- Deleta entidades de rede pelo servidor
 			local netId = TestPedsNetIds[idx]
 			if netId then
 				TriggerServerEvent("ayxlz_emotes:deletePedServer", netId)
 			end
-			-- Deleta entidades locais
 			if DoesEntityExist(testPed) then
 				SetEntityAsMissionEntity(testPed, true, true)
 				DeleteEntity(testPed)
@@ -1791,33 +1747,19 @@ AddEventHandler("onResourceStop", function(resourceName)
 		TestPedsNetIds = {}
 	end
 	
-	---------------------------------------------------------------------------
-	-- 2. DESCONGELAR O JOGADOR (animações em grupo/shared)
-	---------------------------------------------------------------------------
 	FreezeEntityPosition(Ped, false)
 	
-	---------------------------------------------------------------------------
-	-- 3. DESATACHAR O JOGADOR (se estiver attached a outro ped)
-	---------------------------------------------------------------------------
 	if IsEntityAttached(Ped) then
 		DetachEntity(Ped, true, true)
 	end
 	
-	---------------------------------------------------------------------------
-	-- 4. RESTAURAR COLISÃO
-	---------------------------------------------------------------------------
 	SetEntityCollision(Ped, true, true)
 	
-	---------------------------------------------------------------------------
-	-- 5. LIMPAR ANIMAÇÃO ATUAL E TAREFAS
-	---------------------------------------------------------------------------
 	if CurrentAnimation then
-		-- Cancela compartilhamento no servidor
 		if CurrentAnimation.category == "shared" then
 			TriggerServerEvent("ayxlz_emotes:cancelShared")
 		end
 		
-		-- Limpa a animação
 		if CurrentAnimation.dict == "Scenario" then
 			ClearPedTasksImmediately(Ped)
 			ClearAreaOfObjects(GetEntityCoords(Ped), 3.0, 0)
@@ -1828,9 +1770,6 @@ AddEventHandler("onResourceStop", function(resourceName)
 		CurrentAnimation = nil
 	end
 	
-	---------------------------------------------------------------------------
-	-- 6. DELETAR PROPS DO JOGADOR (cigarros, copos, objetos na mão, etc.)
-	---------------------------------------------------------------------------
 	if PlayerProps and #PlayerProps > 0 then
 		for _, prop in pairs(PlayerProps) do
 			if DoesEntityExist(prop) then
@@ -1840,9 +1779,6 @@ AddEventHandler("onResourceStop", function(resourceName)
 		PlayerProps = {}
 	end
 	
-	---------------------------------------------------------------------------
-	-- 7. PARAR EFEITOS DE PARTÍCULAS (fumaça, fogo, etc.)
-	---------------------------------------------------------------------------
 	if PlayerParticles and #PlayerParticles > 0 then
 		for _, particle in pairs(PlayerParticles) do
 			StopParticleFxLooped(particle, false)
@@ -1850,9 +1786,6 @@ AddEventHandler("onResourceStop", function(resourceName)
 		PlayerParticles = {}
 	end
 	
-	---------------------------------------------------------------------------
-	-- 8. DELETAR PED DE PREVIEW (clone que aparece no menu)
-	---------------------------------------------------------------------------
 	if ClonedPed and DoesEntityExist(ClonedPed) then
 		DeleteEntity(ClonedPed)
 		ClonedPed = nil
@@ -1860,9 +1793,6 @@ AddEventHandler("onResourceStop", function(resourceName)
 	IsInPreview = false
 	ShowPed = false
 	
-	---------------------------------------------------------------------------
-	-- 9. DELETAR FAKE PROPS (props da preview)
-	---------------------------------------------------------------------------
 	if FakeProps then
 		for _, prop in pairs(FakeProps) do
 			if DoesEntityExist(prop) then
@@ -1872,24 +1802,15 @@ AddEventHandler("onResourceStop", function(resourceName)
 		FakeProps = {}
 	end
 	
-	---------------------------------------------------------------------------
-	-- 10. LIMPAR PED COMPARTILHADO (partner de animação em dupla)
-	---------------------------------------------------------------------------
 	if CurrentSharedTestPed and DoesEntityExist(CurrentSharedTestPed) then
 		DetachEntity(CurrentSharedTestPed, true, true)
 		ClearPedTasksImmediately(CurrentSharedTestPed)
 		CurrentSharedTestPed = nil
 	end
 	
-	---------------------------------------------------------------------------
-	-- 11. FECHAR O MENU NUI
-	---------------------------------------------------------------------------
 	SendNUIMessage({ action = 'display', status = false })
 	SetNuiFocus(false, false)
 	
-	---------------------------------------------------------------------------
-	-- 12. RESETAR EXPRESSÃO FACIAL E WALKING STYLE
-	---------------------------------------------------------------------------
 	ClearFacialIdleAnimOverride(Ped)
 	ResetPedMovementClipset(Ped, 0.2)
 	

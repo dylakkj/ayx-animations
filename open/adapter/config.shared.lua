@@ -8,8 +8,8 @@ Config = {
 
 	AllowedInCars = false,
 
-	AnimBlendIn = 2.0,    -- Velocidade de entrada na animação
-	AnimBlendOut = -2.0,   -- Velocidade de saída da animação
+	AnimBlendIn = 2.0,
+	AnimBlendOut = -2.0,
 
 	Notify = function(msg, title, tipo)
 		TriggerEvent("Notify", title or "Animação", msg, tipo or "info", 5000)

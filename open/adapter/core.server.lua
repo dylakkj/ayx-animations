@@ -6,9 +6,6 @@ local LICENSE_CONFIG = {
 	RecheckInterval = 30,
 	ResourceName = "ayx-animations",
 
-	-- Chave de licença local (alternativa ao IP)
-	-- Configure no server.cfg: set ayx_license_key "SUA-CHAVE-AQUI"
-	-- Ou defina diretamente aqui (menos recomendado):
 	LicenseKey = nil,
 }
 
@@ -42,25 +39,20 @@ local function HttpRequest(url, cb)
 	end, "GET", "", { ["Content-Type"] = "application/json", ["Cache-Control"] = "no-cache" })
 end
 
---- Obtém a license key configurada (file > convar > config)
 local function GetLicenseKey()
-	-- 1. Tenta carregar do arquivo local _license.json
 	local localFile = LoadResourceFile(GetCurrentResourceName(), "_license.json")
 	if localFile then
 		local data = json.decode(localFile)
 		if data and data.key and data.key ~= "" then
-			--[[ LicenseLog("Chave detectada no arquivo local _license.json.", "info") ]]
 			return data.key
 		end
 	end
 
-	-- 2. Tenta convar setada no server.cfg
 	local convarKey = GetConvar("ayx_license_key", "")
 	if convarKey and convarKey ~= "" then
 		return convarKey
 	end
 
-	-- 3. Tenta variável de config
 	if LICENSE_CONFIG.LicenseKey and LICENSE_CONFIG.LicenseKey ~= "" then
 		return LICENSE_CONFIG.LicenseKey
 	end
@@ -103,7 +95,6 @@ end
 local recheckRetries = 0
 local MAX_RECHECK_RETRIES = 3
 
---- Verifica expiração de uma entrada de licença
 local function CheckExpiry(entry)
 	if entry and entry.expires then
 		local year, month, day = entry.expires:match("(%d+)-(%d+)-(%d+)")
@@ -114,14 +105,13 @@ local function CheckExpiry(entry)
 				LicenseLog("  LICENÇA EXPIRADA!", "error")
 				LicenseLog("  Entre em contato para renovar.", "error")
 				LicenseLog("═══════════════════════════════════════════", "error")
-				return true -- expirada
+				return true
 			end
 		end
 	end
-	return false -- válida
+	return false
 end
 
---- Tenta autenticar por IP
 local function TryAuthByIP(licenses, ip)
 	if not licenses.authorized_ips or type(licenses.authorized_ips) ~= "table" then
 		return false, nil
@@ -136,7 +126,6 @@ local function TryAuthByIP(licenses, ip)
 	return false, nil
 end
 
---- Tenta autenticar por license key
 local function TryAuthByLicenseKey(licenses, key)
 	if not key or not licenses.authorized_licenses or type(licenses.authorized_licenses) ~= "table" then
 		return false, nil
@@ -154,9 +143,6 @@ end
 local function CheckLicense(isRecheck)
 	local licenseKey = GetLicenseKey()
 	
-	---------------------------------------------------------------------------
-	-- FLUXO RÁPIDO: Se tem license key configurada, verifica PRIMEIRO (sem esperar IP)
-	---------------------------------------------------------------------------
 	if licenseKey then
 		local url = LICENSE_CONFIG.GitHubURL .. "?t=" .. os.time()
 		HttpRequest(url, function(code, body)
@@ -250,9 +236,6 @@ local function CheckLicense(isRecheck)
 			end
 		end)
 	else
-		-----------------------------------------------------------------------
-		-- FLUXO PADRÃO: Sem license key, verifica por IP (comportamento original)
-		-----------------------------------------------------------------------
 		GetServerPublicIP(function(ip)
 			if not ip then
 				if isRecheck then
@@ -265,7 +248,6 @@ local function CheckLicense(isRecheck)
 					return
 				end
 				LicenseLog("Não foi possível obter o IP público do servidor.", "error")
-				--[[ LicenseLog("Dica: Configure 'set ayx_license_key' no server.cfg para autenticação rápida por chave.", "info") ]]
 				LicenseLog("Funções bloqueadas por segurança.", "error")
 				isLicensed = false
 				licenseChecked = true
@@ -398,14 +380,11 @@ Tunnel.bindInterface("animacoes",src)
 -----------------------------------------------------------------------------------------------------------------------------------------
 local activeShared = {}
 
------------------------------------------------------------------------------------------------------------------------------------------
--- LICENSE GUARD - Verifica licença e bloqueia TODAS as funções se inválida
------------------------------------------------------------------------------------------------------------------------------------------
 local function LicenseGuard()
 	if not IsServerLicensed() then
-		return true -- bloqueado
+		return true
 	end
-	return false -- permitido
+	return false
 end
 
 CreateThread(function()
@@ -505,7 +484,6 @@ AddEventHandler("ayxlz_emotes:forceSharedEmote", function(target, emoteName, tar
 		local requesterNetId = NetworkGetNetworkIdFromEntity(requesterPed)
 		local responderNetId = NetworkGetNetworkIdFromEntity(responderPed)
 		
-		-- Captura posição e heading exatos do requester (âncora) pelo servidor
 		local anchorCoords = GetEntityCoords(requesterPed)
 		local anchorHeading = GetEntityHeading(requesterPed)
 		
@@ -516,7 +494,6 @@ AddEventHandler("ayxlz_emotes:forceSharedEmote", function(target, emoteName, tar
 			h = anchorHeading
 		}
 		
-		-- Player 1 (source/âncora)
 		TriggerClientEvent("ayxlz_emotes:playSharedEmoteSync", source, {
 			emoteName = emoteName,
 			targetNetId = responderNetId,
@@ -524,7 +501,6 @@ AddEventHandler("ayxlz_emotes:forceSharedEmote", function(target, emoteName, tar
 			role = "anchor"
 		})
 		
-		-- Player 2 (target/synced)
 		TriggerClientEvent("ayxlz_emotes:playSharedEmoteSync", nPlayer, {
 			emoteName = targetEmote,
 			targetNetId = requesterNetId,
@@ -606,7 +582,6 @@ AddEventHandler("ayxlz_emotes:response",function(request,accepted)
 			h = anchorHeading
 		}
 		
-		-- Player 1 (requester/âncora): recebe evento com role "anchor"
 		TriggerClientEvent("ayxlz_emotes:playSharedEmoteSync", requester, {
 			emoteName = request.emoteName,
 			targetNetId = responderNetId,
@@ -614,7 +589,6 @@ AddEventHandler("ayxlz_emotes:response",function(request,accepted)
 			role = "anchor"
 		})
 		
-		-- Player 2 (responder): recebe evento com role "synced" + coordenadas do âncora
 		TriggerClientEvent("ayxlz_emotes:playSharedEmoteSync", source, {
 			emoteName = request.targetEmote,
 			targetNetId = requesterNetId,
@@ -686,22 +660,18 @@ RegisterCommand("spawnped", function(source, Message)
 					if type(char.clothes) == "table" and next(char.clothes) == nil then char.clothes = nil end
 					if type(char.tattoos) == "table" and next(char.tattoos) == nil then char.tattoos = nil end
 					
-					-- Salva a roupa atual do jogador
 					local result2 = exports['oxmysql']:query_async('SELECT * FROM `characters` WHERE `id` = ?;',{Passport})
 					if type(result2) == 'table' and result2[1] then
 						local myChar = { skin = json.decode(result2[1].skinn), clothes = json.decode(result2[1].clothes), tattoos = json.decode(result2[1].tattoos) }
 						if type(myChar.clothes) == "table" and next(myChar.clothes) == nil then myChar.clothes = nil end
 						if type(myChar.tattoos) == "table" and next(myChar.tattoos) == nil then myChar.tattoos = nil end
 						
-						-- Aplica roupa do player alvo (temporariamente)
 						exports['snt-creator']:setCharacterData(src, char)
 						Wait(1500)
 						
-						-- Clona
 						TriggerClientEvent("ayxlz_emotes:spawnTestPedCli", src)
 						Wait(500)
 						
-						-- Reverte para a roupa anterior
 						exports['snt-creator']:setCharacterData(src, myChar)
 						TriggerClientEvent('Notify',src,'sucesso','Ped spawnado com as roupas do passaporte <b>#'..targetId..'</b>.',"verde",5000)
 						return
@@ -741,22 +711,18 @@ RegisterCommand("spawnped2", function(source, Message)
 					if type(char.clothes) == "table" and next(char.clothes) == nil then char.clothes = nil end
 					if type(char.tattoos) == "table" and next(char.tattoos) == nil then char.tattoos = nil end
 					
-					-- Salva a roupa atual do jogador
 					local result2 = exports['oxmysql']:query_async('SELECT * FROM `characters` WHERE `id` = ?;',{Passport})
 					if type(result2) == 'table' and result2[1] then
 						local myChar = { skin = json.decode(result2[1].skinn), clothes = json.decode(result2[1].clothes), tattoos = json.decode(result2[1].tattoos) }
 						if type(myChar.clothes) == "table" and next(myChar.clothes) == nil then myChar.clothes = nil end
 						if type(myChar.tattoos) == "table" and next(myChar.tattoos) == nil then myChar.tattoos = nil end
 						
-						-- Aplica roupa do player alvo (temporariamente)
 						exports['snt-creator']:setCharacterData(src, char)
 						Wait(1500)
 						
-						-- Clona
 						TriggerClientEvent("ayxlz_emotes:spawnTestPed2Cli", src)
 						Wait(500)
 						
-						-- Reverte para a roupa anterior
 						exports['snt-creator']:setCharacterData(src, myChar)
 						TriggerClientEvent('Notify',src,'sucesso','Ped físico spawnado com as roupas do passaporte <b>#'..targetId..'</b>.',"verde",5000)
 						return

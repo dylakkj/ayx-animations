@@ -18,7 +18,6 @@ shared_script {
 client_scripts {
 
 	'@vrp/lib/utils.lua',
-	'adapter/locale.client.lua',
 	'adapter/animations.client.lua',
 	'adapter/core.client.lua',
 
