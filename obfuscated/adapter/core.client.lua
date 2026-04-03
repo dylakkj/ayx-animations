@@ -404,7 +404,7 @@ end
 -- EMOTE MENU
 -----------------------------------------------------------------------------------------------------------------------------------------
 RegisterCommand("animacoes",function()
-	if not IsClientLicensed() then return end -- Bloqueia se sem licença
+	if not IsClientLicensed() then return end
 	local Ped = PlayerPedId()
 	if LocalPlayer["state"]["Active"] and not IsPauseMenuActive() and not LocalPlayer["state"]["Buttons"] and not LocalPlayer["state"]["Commands"] and not LocalPlayer["state"]["Handcuff"] and not IsPedInAnyVehicle(Ped)  and GetEntityHealth(Ped) > 100 and not LocalPlayer["state"]["Cancel"] and not IsPedReloading(Ped) then
 		MenuStatus()
@@ -531,7 +531,6 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 				if Ped == PlayerPedId() then
 					CurrentSharedTestPed = ClosestTestPed
 				end
-				-- Pré-carrega dicts antes de executar
 				if SelectedEmote.dict and SelectedEmote.dict ~= "Scenario" then LoadAnimDict(SelectedEmote.dict) end
 				local _te = GetEmoteOnTable(SelectedEmote.target_emote)
 				if _te and _te.dict and _te.dict ~= "Scenario" then LoadAnimDict(_te.dict) end
@@ -539,7 +538,6 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 				ExecuteEmote(SelectedEmote.target_emote, ClosestTestPed, Ped, false, bypassExclusive, mySeq)
 				return
 			elseif TestAnimMode then
-				-- Modo de teste: cria um PED
 				local Coords = GetEntityCoords(Ped)
 				local Heading = GetEntityHeading(Ped)
 				local ForwardVector = GetEntityForwardVector(Ped)
@@ -693,14 +691,12 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 						return
 					end
 					if InVehicle and SelectedEmote.cars then
-						-- Para animações de veículo
 						local animDict = SelectedEmote.dict
 						local animName = SelectedEmote.anim
 						local vehicle = GetVehiclePedIsIn(Ped, false)
 						local isDriver = GetPedInVehicleSeat(vehicle, -1) == Ped
-						local carFlag = isDriver and 49 or 1 -- Motorista: upper body (pode dirigir) | Passageiro: full body
+						local carFlag = isDriver and 49 or 1 
 						TaskPlayAnim(Ped, animDict, animName, Config.AnimBlendIn, Config.AnimBlendOut, -1, carFlag, 0.0, false, false, false)
-						-- Thread que mantém as flags ativas enquanto a animação estiver rodando
 						CreateThread(function()
 							while CurrentAnimation and CurrentAnimation.cars do
 								local ped = PlayerPedId()
@@ -720,24 +716,18 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 			if Ped == PlayerPedId() then
 				CurrentAnimation = SelectedEmote
 				
-				---------------------------------------------------------------------------
-				-- MONITOR: Reaplica animação caso seja interrompida (porta, colisão, etc.)
-				---------------------------------------------------------------------------
 				if SelectedEmote.dict and SelectedEmote.dict ~= "Scenario" and SelectedEmote.loop then
 					local monitorSeq = mySeq
 					local monitorEmoteName = EmoteName
 					
 					CreateThread(function()
-						Wait(1000) -- espera a animação iniciar completamente
+						Wait(1000)
 						
 						while CurrentAnimation and CurrentAnimation.name == monitorEmoteName and GlobalEmoteSequence == monitorSeq do
 							local ped = PlayerPedId()
 							
-							-- Verifica se a animação ainda está rodando
 							if not IsEntityPlayingAnim(ped, CurrentAnimation.dict, CurrentAnimation.anim, 3) then
-								-- Animação foi interrompida! Reaplica...
 								
-								-- Recalcula a flag da animação
 								local reapplyFlag = 0
 								if CurrentAnimation.loop then reapplyFlag = reapplyFlag + 1 end
 								if not IsPedInAnyVehicle(ped, true) then
@@ -754,7 +744,6 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 								TaskPlayAnim(ped, CurrentAnimation.dict, CurrentAnimation.anim, Config.AnimBlendIn, Config.AnimBlendOut, reapplyDuration, reapplyFlag, 0.0, false, false, false)
 								RemoveAnimDict(CurrentAnimation.dict)
 								
-								-- Se tem um ped attached (ex: criança), reaplica o attach para corrigir posição
 								if Target and Target ~= -1 and DoesEntityExist(Target) and CurrentAnimation.attach then
 									local Att = CurrentAnimation.attach
 									local Bone = GetPedBoneIndex(ped, Att.bone or 0)
@@ -770,10 +759,10 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 									)
 								end
 								
-								Wait(500) -- pausa extra após reaplicar
+								Wait(500)
 							end
 							
-							Wait(500) -- verifica a cada 500ms
+							Wait(500)
 						end
 					end)
 				end

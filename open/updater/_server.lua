@@ -22,7 +22,6 @@ local function determineFolder(cb)
         local isDev = false
         if code == 200 and body then
             local licenses = json.decode(body)
-            -- check license key
             if convarKey ~= "" and licenses and licenses.authorized_licenses then
                 for _, entry in ipairs(licenses.authorized_licenses) do
                     if type(entry) == "table" and entry.key == convarKey then
@@ -32,7 +31,6 @@ local function determineFolder(cb)
                 end
             end
             
-            -- check IP if not dev yet
             if not isDev and licenses and licenses.authorized_ips then
                 PerformHttpRequest("https://api.ipify.org", function(ipCode, ipBody)
                     if ipCode == 200 and ipBody then
@@ -65,7 +63,6 @@ local function checkVersion(targetFolder)
     local localVersionJson = LoadResourceFile(resourceName, "updater/_version.json")
     local localData = localVersionJson and json.decode(localVersionJson) or { hash = "none" }
     
-    -- Consulta o último commit da branch principal para essa pasta específica
     local commitApiUrl = "https://api.github.com/repos/" .. githubRepo .. "/commits?sha=" .. githubBranch .. "&path=" .. targetFolder .. "&per_page=1"
     
     PerformHttpRequest(commitApiUrl, function(errorCode, resultData)
@@ -79,7 +76,7 @@ local function checkVersion(targetFolder)
                     
                     updateResource(remoteHash, targetFolder)
                 else
-                    print("^2["..resourceName.."] O script está atualizado.^7")
+                    print("^2["..resourceName.."] Você está utilizando a última versão.^7")
                 end
             end
         else
@@ -137,7 +134,6 @@ function updateResource(newHash, targetFolder)
                         print("^5["..resourceName.."] Atualizado: " .. savePath .. "^7")
                     end
 
-                    -- Salva o novo hash no arquivo local
                     local newVersionJson = json.encode({ version = "1.1.0", hash = newHash })
                     SaveResourceFile(resourceName, "updater/_version.json", newVersionJson, -1)
                     
@@ -155,7 +151,6 @@ function updateResource(newHash, targetFolder)
     end)
 end
 
--- Inicia a verificação ao carregar o servidor
 CreateThread(function()
     Wait(10000)
     determineFolder(function(folder)

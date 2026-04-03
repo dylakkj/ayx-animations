@@ -187,19 +187,12 @@ local function CheckLicense(isRecheck)
 			local licenseInfo = nil
 			local method = nil
 
-			-----------------------------------------------------------------
-			-- 1º TENTATIVA: License Key (rápido, sem depender de IP)
-			-----------------------------------------------------------------
 			authorized, licenseInfo = TryAuthByLicenseKey(licenses, licenseKey)
 			if authorized then
 				method = "license_key"
 			end
 
-			-----------------------------------------------------------------
-			-- 2º TENTATIVA: IP (fallback, caso a key não bata)
-			-----------------------------------------------------------------
 			if not authorized then
-				-- Busca IP em background e tenta por IP
 				GetServerPublicIP(function(ip)
 					if ip then
 						serverIP = ip
@@ -219,7 +212,6 @@ local function CheckLicense(isRecheck)
 							return
 						end
 					end
-					-- Nenhum método funcionou
 					isLicensed = false
 					licenseChecked = true
 					LicenseLog("  License Key não encontrada no servidor de licenças.", "error")
@@ -227,12 +219,9 @@ local function CheckLicense(isRecheck)
 						LicenseLog("  IP: " .. ip .. " também não possui uma licença válida.", "error")
 					end
 				end)
-				return -- Sai aqui, o callback do IP cuidará do resto
+				return
 			end
 
-			-----------------------------------------------------------------
-			-- RESULTADO (license key encontrada)
-			-----------------------------------------------------------------
 			if CheckExpiry(licenseInfo) then
 				isLicensed = false
 				licenseChecked = true
