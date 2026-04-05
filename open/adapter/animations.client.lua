@@ -665,6 +665,16 @@ AnimTable = {
 		} 
 	},
 
+	["licking9"] = { category = "shared", dict = "murda@regularbody", anim = "regularbody", target_emote = "licking10", walk = false, loop = true, hide = true, offset = { z = -0.84 } },
+	["licking10"] = { category = "shared", dict = "genesismods@ert23", anim = "lickingm", target_emote = "licking9", walk = false, loop = true, hide = true,
+		offset = {
+			x = 0.0,
+			y = 0.88,
+			z = 0.84,
+			h = 0.0,
+		}
+	},
+
 	["meianove2"] = { category = "shared", dict = "slave@mchmnk", anim = "slave_clip", target_emote = "meianove2f", walk = false, loop = true, hide = true },
 	["meianove2f"] = { category = "shared", dict = "genesismods@ert18" , anim = "69f", target_emote = "meianove2" , andar = false , loop = true , hide = true,
 		offset = {
