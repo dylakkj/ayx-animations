@@ -13,6 +13,14 @@ vSERVER = Tunnel.getInterface("animacoes")
 -- CLIENT LICENSE CHECK
 -----------------------------------------------------------------------------------------------------------------------------------------
 local IsLicenseValid = false
+local AnimLookup = {}
+
+local function UpdateAnimLookup()
+	AnimLookup = {}
+	for k, v in pairs(AnimTable) do
+		AnimLookup[k:lower()] = v
+	end
+end
 
 function IsClientLicensed()
 	return IsLicenseValid
@@ -327,7 +335,7 @@ function CreatePreviewEmote(emoteName)
 				SetEntityHeading(ClonedPed, camRot.z + 170.0)
 				SetEntityRotation(ClonedPed, camRot.x * -1, 0, camRot.z + 170.0, false, false)
 
-				Wait(4)
+				Wait(10)
 			end
 		end)
 
@@ -395,10 +403,13 @@ end)
 -- GET EMOTE ON TABLE
 -----------------------------------------------------------------------------------------------------------------------------------------
 function GetEmoteOnTable(emoteName)
-	if AnimTable[emoteName] then
-		AnimTable[emoteName].name = emoteName
-		return AnimTable[emoteName]
+	if not emoteName then return nil end
+	local lowerName = emoteName:lower()
+	if AnimLookup[lowerName] then
+		AnimLookup[lowerName].name = lowerName
+		return AnimLookup[lowerName]
 	end
+	return nil
 end
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- EMOTE MENU
@@ -419,7 +430,7 @@ CreateThread(function()
 		local TimeDistance = 1000
 
 		if CurrentAnimation and not IsPauseMenuActive() then
-			TimeDistance = 0
+			TimeDistance = 250
 			local Ped = PlayerPedId()
 
 			if IsPedShooting(Ped) then
@@ -643,20 +654,20 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 						local Offset = SelectedEmote.offset
 
 						if Offset then
-							function CalculatePos()
-								local targetObj = GetEmoteOnTable(SelectedEmote.name) or SelectedEmote
-								local Offset = targetObj.offset or SelectedEmote.offset
+							local targetObj = GetEmoteOnTable(SelectedEmote.name) or SelectedEmote
+							local actualOffset = targetObj.offset or SelectedEmote.offset
 
-								local offX = Offset.x or 0.0
-								local offY = Offset.y or 1.0
-								local offZ = Offset.z or 0.0
-								local offH = GetEntityHeading(Target) + (Offset.h or 180.0)
+							function CalculatePos()
+								if not Target or not DoesEntityExist(Target) then return end
+								local offX = actualOffset.x or 0.0
+								local offY = actualOffset.y or 1.0
+								local offZ = actualOffset.z or 0.0
+								local offH = GetEntityHeading(Target) + (actualOffset.h or 180.0)
 
 								local Coords = GetOffsetFromEntityInWorldCoords(Target, offX, offY, offZ)
 
 								SetEntityCoordsNoOffset(Ped, Coords.x, Coords.y, Coords.z, false, false, true)
 								SetEntityHeading(Ped, offH)
-								FreezeEntityPosition(Ped, true)
 							end
 
 							CalculatePos()
@@ -664,7 +675,7 @@ function ExecuteEmote(EmoteName, Ped, Target, toggle, bypassExclusive, seq)
 							CreateThread(function()
 								while IsInPreview do
 									CalculatePos()
-									Wait(0)
+									Wait(7)
 								end
 							end)
 						end
@@ -1248,7 +1259,7 @@ CreateThread(function()
 		Wait(sleep)
 		
 		if IsDisabledControlPressed(0, 21) or IsControlPressed(0, 21) then
-			sleep = 0
+			sleep = 10
 
 			for key, value in pairs(keys) do
 				if IsControlJustPressed(0, value) then
@@ -1332,6 +1343,7 @@ end)
 RegisterNuiCallback("loaded", function(_, cb)
 	cb("ok")
 	UILoaded = true
+	UpdateAnimLookup()
 	SendNUIMessage({
 		action = "init",
 		animationList = AnimationList,
