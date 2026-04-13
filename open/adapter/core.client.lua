@@ -1252,6 +1252,12 @@ end)
 -- SHORTCUTS SYSTEM
 -----------------------------------------------------------------------------------------------------------------------------------------
 local keys = { a = 34, b = 29, c = 26, d = 30, e = 49, f = 23, g = 47, h = 74, i = 23, j = 38, k = 311, l = 182, m = 244, n = 249, o = 199, p = 44, q = 38, r = 45, s = 33, t = 245, u = 303, v = 244, w = 32, x = 73, y = 246, z = 20 }
+
+local keysArray = {}
+for key, value in pairs(keys) do
+	keysArray[#keysArray + 1] = { key = key, value = value }
+end
+
 CreateThread(function()
 	local sleep = 250
 
@@ -1259,13 +1265,13 @@ CreateThread(function()
 		Wait(sleep)
 		
 		if IsDisabledControlPressed(0, 21) or IsControlPressed(0, 21) then
-			sleep = 10
+			sleep = 50
 
-			for key, value in pairs(keys) do
-				if IsControlJustPressed(0, value) then
+			for i = 1, #keysArray do
+				if IsControlJustPressed(0, keysArray[i].value) then
 					SendNUIMessage({
 						action = 'playSavedEmote',
-						key = key
+						key = keysArray[i].key
 					})
 
 					break
